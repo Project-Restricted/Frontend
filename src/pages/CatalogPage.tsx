@@ -1,8 +1,16 @@
+import { Header } from '../components/Header/Header';
+
 export const CatalogPage = () => {
   return (
-    <div>
-      <h1>Каталог фильмов</h1>
-      <p>Здесь будет сетка с фильмами</p>
-    </div>
+    <>
+      <Header 
+        currentUser={null}
+        onLoginClick={() => console.log('Вход')}
+        onRegisterClick={() => console.log('Регистрация')}
+        onLogoutClick={() => console.log('Выход')}
+        onProfileClick={() => console.log('Профиль')}
+      />
+      <div></div>
+    </>
   );
 };
