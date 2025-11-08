@@ -2,6 +2,7 @@ import { Container, Button, Box } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { FilmInfo } from '../components/FilmInfo/FilmInfo';
+import { VideoPlayer } from '../components/VideoPlayer/VideoPlayer';
 import { mockFilmDetails } from '../data';
 
 export const FilmPage = () => {
@@ -48,7 +49,9 @@ export const FilmPage = () => {
           Назад к каталогу
         </Button>
 
-        <FilmInfo film={mockFilmDetails} />        
+        <FilmInfo film={mockFilmDetails} />
+        
+        <VideoPlayer videoUrl={mockFilmDetails.videoUrl} />
         
       </Container>
     </Box>
