@@ -3,6 +3,7 @@ import { ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { FilmInfo } from '../components/FilmInfo/FilmInfo';
 import { VideoPlayer } from '../components/VideoPlayer/VideoPlayer';
+import { CommentsSection } from '../components/CommentsSection/CommentsSection';
 import { mockFilmDetails } from '../data';
 
 export const FilmPage = () => {
@@ -10,6 +11,22 @@ export const FilmPage = () => {
 
   const handleBackClick = () => {
     navigate('/');
+  };
+
+  const handleAddComment = (text: string) => {
+    console.log('Добавить комментарий:', text);
+  };
+
+  const handleAddReply = (parentId: number, text: string) => {
+    console.log('Добавить ответ:', parentId, text);
+  };
+
+  const handleLikeComment = (commentId: number) => {
+    console.log('Лайк комментария:', commentId);
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    console.log('Удалить комментарий:', commentId);
   };
 
   return (
@@ -52,6 +69,16 @@ export const FilmPage = () => {
         <FilmInfo film={mockFilmDetails} />
         
         <VideoPlayer videoUrl={mockFilmDetails.videoUrl} />
+        
+        <CommentsSection
+          reviews={mockFilmDetails.reviews}
+          currentUserId={1}
+          isModerator={false}
+          onAddComment={handleAddComment}
+          onAddReply={handleAddReply}
+          onLikeComment={handleLikeComment}
+          onDeleteComment={handleDeleteComment}
+        />
         
       </Container>
     </Box>
