@@ -3,28 +3,69 @@ import { Box, Container } from '@mui/material';
 import { Header } from '../components/Header/Header';
 import { CatalogFilters } from '../components/CatalogFilters/CatalogFilters';
 import { MovieCard } from '../components/MovieCard/MovieCard';
+import { AuthModal } from '../components/AuthModal/AuthModal';
 import { mockFilms } from '../data';
+import type { LoginRequest, RegisterRequest, User } from '../types/user';
 
 export const CatalogPage = () => {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null); // ← Исправили тип
 
   const handleAddMovie = () => {
     console.log('Добавить фильм');
   };
 
-  const handleFilmClick = (filmId: number) => {
-    console.log('Переход на страницу фильма:', filmId);
+  const handleLogin = (data: LoginRequest) => {
+    console.log('Логин данные:', data);
+    // Временный mock пользователь после "входа"
+    setCurrentUser({
+      id: 1,
+      email: 'user@example.com',
+      username: data.username,
+      avatarUrl: '',
+      averageRating: 4.2,
+      reviewsCount: 5,
+      isModerator: false,
+      createdAt: Date.now()
+    });
+  };
+
+  const handleRegister = (data: RegisterRequest) => {
+    console.log('Регистрация данные:', data);
+    // Временный mock пользователь после "регистрации"
+    setCurrentUser({
+      id: 2,
+      email: data.email,
+      username: data.username,
+      avatarUrl: '',
+      averageRating: 0,
+      reviewsCount: 0,
+      isModerator: false,
+      createdAt: Date.now()
+    });
+  };
+
+  const handleLogout = () => {
+    console.log('Выход');
+    setCurrentUser(null);
+  };
+
+  const handleProfileClick = () => {
+    console.log('Переход в профиль');
+    // Потом добавим навигацию
   };
 
   return (
     <>
       <Header 
-        currentUser={null}
-        onLoginClick={() => console.log('Вход')}
-        onRegisterClick={() => console.log('Регистрация')}
-        onLogoutClick={() => console.log('Выход')}
-        onProfileClick={() => console.log('Профиль')}
+        currentUser={currentUser}
+        onLoginClick={() => setIsLoginModalOpen(true)}
+        onRegisterClick={() => setIsRegisterModalOpen(true)}
+        onLogoutClick={handleLogout}
+        onProfileClick={handleProfileClick}
       />
       
       <CatalogFilters
@@ -56,11 +97,20 @@ export const CatalogPage = () => {
             <MovieCard 
               key={film.id}
               film={film}
-              onClick={() => handleFilmClick(film.id)}
             />
           ))}
         </Box>
       </Container>
+
+      <AuthModal
+        open={isLoginModalOpen || isRegisterModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          setIsRegisterModalOpen(false);
+        }}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
     </>
   );
 };
