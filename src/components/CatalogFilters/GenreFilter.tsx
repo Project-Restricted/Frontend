@@ -1,12 +1,11 @@
 import { Box, Chip } from '@mui/material';
 import { catalogFiltersStyles } from './CatalogFilters.styles';
+import { ALL_GENRES } from '../../data';
 
 interface GenreFilterProps {
   selectedGenres: string[];
   onGenresChange: (genres: string[]) => void;
 }
-
-const GENRES = ['Боевик', 'Драма', 'Комедия', 'Фантастика', 'Ужасы', 'Триллер', 'Мелодрама', 'Детектив'];
 
 export const GenreFilter = ({ selectedGenres, onGenresChange }: GenreFilterProps) => {
   const handleGenreClick = (genre: string) => {
@@ -18,7 +17,7 @@ export const GenreFilter = ({ selectedGenres, onGenresChange }: GenreFilterProps
 
   return (
     <Box sx={catalogFiltersStyles.genresContainer}>
-      {GENRES.map((genre) => (
+      {ALL_GENRES.map((genre) => (
         <Chip
           key={genre}
           label={genre}
