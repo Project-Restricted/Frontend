@@ -12,7 +12,7 @@ export const CatalogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null); // ← Исправили тип
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const handleAddMovie = () => {
     console.log('Добавить фильм');
@@ -20,7 +20,7 @@ export const CatalogPage = () => {
 
   const handleLogin = (data: LoginRequest) => {
     console.log('Логин данные:', data);
-    // Временный mock пользователь после "входа"
+  
     setCurrentUser({
       id: 1,
       email: 'user@example.com',
@@ -35,7 +35,7 @@ export const CatalogPage = () => {
 
   const handleRegister = (data: RegisterRequest) => {
     console.log('Регистрация данные:', data);
-    // Временный mock пользователь после "регистрации"
+  
     setCurrentUser({
       id: 2,
       email: data.email,
@@ -55,7 +55,6 @@ export const CatalogPage = () => {
 
   const handleProfileClick = () => {
     console.log('Переход в профиль');
-    // Потом добавим навигацию
   };
 
   return (

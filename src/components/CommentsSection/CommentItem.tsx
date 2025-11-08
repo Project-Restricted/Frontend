@@ -1,5 +1,5 @@
 import { Box, Avatar, Typography, Button, TextField } from '@mui/material';
-import { Favorite, Reply, Delete } from '@mui/icons-material';
+import { Favorite, Reply, Delete, Edit } from '@mui/icons-material';
 import { useState } from 'react';
 import type { Review } from '../../types/film';
 import { commentsStyles } from './Comments.styles';
@@ -12,6 +12,7 @@ interface CommentItemProps {
   onLike: (commentId: number) => void;
   onReply: (parentId: number, text: string) => void;
   onDelete: (commentId: number) => void;
+  onEdit: (commentId: number) => void;
   replyingTo?: number | null;
   onSetReplyingTo: (commentId: number | null) => void;
   getReplies: (parentId: number) => Review[];
@@ -25,6 +26,7 @@ export const CommentItem = ({
   onLike, 
   onReply, 
   onDelete,
+  onEdit,
   replyingTo,
   onSetReplyingTo,
   getReplies
@@ -32,6 +34,7 @@ export const CommentItem = ({
   const [replyText, setReplyText] = useState('');
   const isMaxDepth = depth >= 3;
   const canDelete = isModerator || comment.user.id === currentUserId;
+  const canEdit = comment.user.id === currentUserId;
 
   const replies = getReplies(comment.id);
 
@@ -44,30 +47,30 @@ export const CommentItem = ({
   };
 
   const formatTimestamp = (timestamp: number): string => {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  
-  if (minutes < 1) return 'только что';
-  
-  if (minutes < 60) {
-    if (minutes === 1) return '1 минуту назад';
-    if (minutes < 5) return `${minutes} минуты назад`;
-    return `${minutes} минут назад`;
-  }
-  
-  if (hours < 24) {
-    if (hours === 1) return '1 час назад';
-    if (hours < 5) return `${hours} часа назад`;
-    return `${hours} часов назад`;
-  }
-  
-  if (days === 1) return '1 день назад';
-  if (days < 5) return `${days} дня назад`;
-  return `${days} дней назад`;
-};
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'только что';
+    
+    if (minutes < 60) {
+      if (minutes === 1) return '1 минуту назад';
+      if (minutes < 5) return `${minutes} минуты назад`;
+      return `${minutes} минут назад`;
+    }
+    
+    if (hours < 24) {
+      if (hours === 1) return '1 час назад';
+      if (hours < 5) return `${hours} часа назад`;
+      return `${hours} часов назад`;
+    }
+    
+    if (days === 1) return '1 день назад';
+    if (days < 5) return `${days} дня назад`;
+    return `${days} дней назад`;
+  };
 
   return (
     <Box sx={commentsStyles.commentItem}>
@@ -111,6 +114,17 @@ export const CommentItem = ({
                 sx={commentsStyles.actionButton}
               >
                 Ответить
+              </Button>
+            )}
+
+            {canEdit && (
+              <Button
+                startIcon={<Edit />}
+                size="small"
+                onClick={() => onEdit(comment.id)}
+                sx={commentsStyles.actionButton}
+              >
+                Редактировать
               </Button>
             )}
 
@@ -168,6 +182,7 @@ export const CommentItem = ({
               onLike={onLike}
               onReply={onReply}
               onDelete={onDelete}
+              onEdit={onEdit}
               replyingTo={replyingTo}
               onSetReplyingTo={onSetReplyingTo}
               getReplies={getReplies}

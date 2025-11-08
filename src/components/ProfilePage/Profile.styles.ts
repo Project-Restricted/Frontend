@@ -57,6 +57,26 @@ export const profileStyles = {
     WebkitBackgroundClip: 'text',
     color: 'transparent'
   },
+  userBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    color: 'white',
+    backgroundColor: 'black',
+    fontSize: '1rem',
+    height: '20px',
+    padding: '0 16px',
+    borderRadius: '20px'
+  },
+  moderatorBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    color: '#FF6B35',
+    backgroundColor: 'black',
+    fontSize: '1rem',
+    height: '20px',
+    padding: '0 16px',
+    borderRadius: '20px'
+  },
   content: {
     flex: 2, 
     display: 'flex', 
@@ -112,7 +132,7 @@ export const profileStyles = {
     color: 'white',
     borderColor: 'white',
     '&:hover': {
-      borderColor: 'rgba(255,255,255,0.6)',
+      borderColor: 'rgba(255, 255, 255, 0.6)',
       bgcolor: 'rgba(255,255,255,0.1)'
     }
   }

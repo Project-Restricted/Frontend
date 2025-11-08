@@ -4,7 +4,7 @@ export const authModalStyles = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    width: 600,
     bgcolor: '#000000',
     border: '2px solid #ffffff',
     borderRadius: 3,
