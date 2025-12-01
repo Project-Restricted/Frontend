@@ -124,15 +124,17 @@ export const profileStyles = {
     color: 'warning.main',
     borderColor: 'warning.main',
     '&:hover': {
+      color: 'warning.main',
       borderColor: 'warning.light',
-      bgcolor: 'rgba(255,167,38,0.1)'
+      bgcolor: 'rgba(255,167,38,0.2)'
     }
   },
   editButton: {
     color: 'white',
     borderColor: 'white',
     '&:hover': {
-      borderColor: 'rgba(255, 255, 255, 0.6)',
+      color: 'rgba(255, 255, 255, 0.8)',
+      borderColor: 'white',
       bgcolor: 'rgba(255,255,255,0.1)'
     }
   }

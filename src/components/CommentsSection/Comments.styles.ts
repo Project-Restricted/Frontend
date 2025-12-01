@@ -78,7 +78,7 @@ export const commentsStyles = {
     alignItems: 'center'
   },
   actionButton: {
-    color: 'rgba(255,255,255,0.7)'
+    color: 'rgba(255,255,255,1)'
   },
   replyForm: {
     mt: 2

@@ -1,21 +1,86 @@
-import { useState } from 'react';
-import { Box, Container } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Container, 
+  CircularProgress, 
+  Alert,
+  Modal 
+} from '@mui/material';
 import { Header } from '../components/Header/Header';
 import { CatalogFilters } from '../components/CatalogFilters/CatalogFilters';
 import { MovieCard } from '../components/MovieCard/MovieCard';
 import { AuthModal } from '../components/AuthModal/AuthModal';
+import { AddFilmModal } from '../components/AddFilmModal';
+import { moviesApi } from '../api/movies';
 import { mockFilms } from '../data';
+import type { FilmPreview } from '../types/film';
+import type { FilmSubmission } from '../types/moderation';
 import type { LoginRequest, RegisterRequest, User } from '../types/user';
 
 export const CatalogPage = () => {
+  const [films, setFilms] = useState<FilmPreview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+   
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isAddFilmModalOpen, setIsAddFilmModalOpen] = useState(false);
+  
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+ 
+  useEffect(() => {
+    const loadMovies = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await moviesApi.getMovies();
+        setFilms(response.films);
+        
+      } catch (err) {
+        console.error('Ошибка загрузки с бэкенда:', err);
+        setError('Не удалось загрузить фильмы с сервера');
+               
+        setFilms(mockFilms);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMovies();
+  }, []);
+
+  const filteredFilms = films.filter(film => {
+    const matchesSearch = film.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesGenres = selectedGenres.length === 0 || 
+      film.genres.some(genre => selectedGenres.includes(genre));
+    
+    return matchesSearch && matchesGenres;
+  });
 
   const handleAddMovie = () => {
-    console.log('Добавить фильм');
+    setIsAddFilmModalOpen(true);
+  };
+
+  const handleAddFilmSubmit = async (filmData: Omit<FilmSubmission, 'id'>) => {
+    console.log('Отправка фильма на модерацию:', filmData);
+
+    const newFilmPreview: FilmPreview = {
+      id: Date.now(),
+      title: filmData.title,
+      posterUrl: filmData.posterUrl || 'https://via.placeholder.com/300x450?text=No+Poster',
+      year: filmData.year,
+      duration: filmData.duration,
+      genres: filmData.genres,
+      rating: 0,
+    };
+    
+    setFilms(prev => [newFilmPreview, ...prev]);
+    setIsAddFilmModalOpen(false);
+       
+    alert('Фильм отправлен на модерацию! (демо)');
   };
 
   const handleLogin = (data: LoginRequest) => {
@@ -31,6 +96,8 @@ export const CatalogPage = () => {
       isModerator: false,
       createdAt: Date.now()
     });
+    
+    setIsLoginModalOpen(false);
   };
 
   const handleRegister = (data: RegisterRequest) => {
@@ -46,6 +113,8 @@ export const CatalogPage = () => {
       isModerator: false,
       createdAt: Date.now()
     });
+    
+    setIsRegisterModalOpen(false);
   };
 
   const handleLogout = () => {
@@ -82,6 +151,18 @@ export const CatalogPage = () => {
           py: 4 
         }}
       >
+        {loading && (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+            <CircularProgress />
+          </Box>
+        )}
+
+        {error && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {error} (используются демо-данные)
+          </Alert>
+        )}
+
         <Box
           sx={{
             display: 'grid',
@@ -92,15 +173,23 @@ export const CatalogPage = () => {
             margin: '0 auto'
           }}
         >
-          {mockFilms.map((film) => (
+          {filteredFilms.map((film) => (
             <MovieCard 
               key={film.id}
               film={film}
             />
           ))}
         </Box>
-      </Container>
 
+        {!loading && filteredFilms.length === 0 && (
+          <Box textAlign="center" py={4}>
+            <Alert severity="info">
+              Фильмы не найдены. Попробуйте изменить параметры поиска.
+            </Alert>
+          </Box>
+        )}
+      </Container>
+      
       <AuthModal
         open={isLoginModalOpen || isRegisterModalOpen}
         onClose={() => {
@@ -110,6 +199,27 @@ export const CatalogPage = () => {
         onLogin={handleLogin}
         onRegister={handleRegister}
       />
+      
+      <Modal
+        open={isAddFilmModalOpen}
+        onClose={() => setIsAddFilmModalOpen(false)}
+        aria-labelledby="add-film-modal"
+        aria-describedby="modal-for-adding-new-film"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2,
+          backdropFilter: 'blur(5px)',
+        }}
+      >        
+        <Box onClick={(e) => e.stopPropagation()}>
+          <AddFilmModal
+            onClose={() => setIsAddFilmModalOpen(false)}
+            onSubmit={handleAddFilmSubmit}
+          />
+        </Box>
+      </Modal>
     </>
   );
 };

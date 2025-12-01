@@ -66,7 +66,7 @@ export const filmInfoStyles = {
     borderColor: 'primary.main',
     minWidth: '130px',
     '&:hover': {
-      bgcolor: 'rgba(255,255,255,0.1)'
+      color: 'rgba(255,255,255,0.8)'
     }
   },
   tagsContainer: {
@@ -133,11 +133,10 @@ export const filmInfoStyles = {
   },
   ratingButton: {
     color: 'white',
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: 'primary.main',
     minWidth: '80px',
     '&:hover': {
-      borderColor: 'primary.main',
-      bgcolor: 'rgba(255,255,255,0.1)'
+      borderColor: 'primary.main'      
     }
   },
   metaSection: {

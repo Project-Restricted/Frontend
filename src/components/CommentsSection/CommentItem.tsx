@@ -157,9 +157,9 @@ export const CommentItem = ({
                 >
                   Отмена
                 </Button>
-                <Button 
-                  variant="contained" 
+                <Button                   
                   onClick={handleReplySubmit}
+                  sx={commentsStyles.actionButton}
                   disabled={!replyText.trim()}
                 >
                   Отправить

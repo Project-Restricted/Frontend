@@ -9,9 +9,11 @@ import { FilmMeta } from './FilmMeta';
 
 interface FilmInfoProps {
   film: FilmDetails;
+  onAddTagClick?: () => void;
+  onRateClick?: () => void;
 }
 
-export const FilmInfo = ({ film }: FilmInfoProps) => {
+export const FilmInfo = ({ film, onAddTagClick, onRateClick }: FilmInfoProps) => {
   return (
     <Paper sx={filmInfoStyles.paper}>
       <Box sx={filmInfoStyles.container}>
@@ -36,7 +38,7 @@ export const FilmInfo = ({ film }: FilmInfoProps) => {
           <Box sx={{ mb: 4 }}>
             <FilmTags 
               tags={film.tags}
-              onAddTag={() => console.log('Добавить тег')}
+              onAddTag={onAddTagClick || (() => console.log('Добавить тег'))}
             />
           </Box>
           
@@ -47,7 +49,7 @@ export const FilmInfo = ({ film }: FilmInfoProps) => {
           <Box sx={{ mb: 4 }}>
             <FilmRating 
               rating={film.rating}
-              onRateClick={() => console.log('Оценить фильм')}
+              onRateClick={onRateClick || (() => console.log('Оценить фильм'))}
             />
           </Box>
           

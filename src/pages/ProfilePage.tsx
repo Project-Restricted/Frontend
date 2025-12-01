@@ -7,21 +7,22 @@ import { ProfileHeader } from '../components/ProfilePage/ProfileHeader';
 import { ProfileInfo } from '../components/ProfilePage/ProfileInfo';
 import { ProfileStats } from '../components/ProfilePage/ProfileStats';
 import { ProfileActions } from '../components/ProfilePage/ProfileActions';
-
-const mockUser = {
-  id: 1,
-  email: 'alexey@example.com',
-  username: 'Алексей',
-  avatarUrl: '',
-  averageRating: 4.2,
-  reviewsCount: 24,
-  isModerator: false,
-  createdAt: Date.now()
-};
+import { EditProfileModal } from '../components/ProfilePage/EditProfileModal';
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [userData, setUserData] = useState({
+    id: 1,
+    email: 'alexey@example.com',
+    username: 'Алексей',
+    avatarUrl: '',
+    averageRating: 4.2,
+    reviewsCount: 24,
+    isModerator: false,
+    createdAt: Date.now()
+  });
 
   const handleBackClick = () => {
     navigate('/');
@@ -32,7 +33,23 @@ export const ProfilePage = () => {
   };
 
   const handleEditProfile = () => {
-    
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProfile = async (data: { username: string; avatarUrl: string }) => {
+    console.log('Сохранение данных:', data);
+       
+    setUserData(prev => ({
+      ...prev,
+      username: data.username,
+      avatarUrl: data.avatarUrl
+    }));
+        
+    await new Promise(resolve => setTimeout(resolve, 500));
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
   };
 
   return (
@@ -55,23 +72,23 @@ export const ProfilePage = () => {
           <Paper sx={profileStyles.paper}>
             <Box sx={profileStyles.layout}>
               <ProfileHeader 
-                username={mockUser.username}
-                avatarUrl={mockUser.avatarUrl}
+                username={userData.username}
+                avatarUrl={userData.avatarUrl}
               />
 
               <Box sx={profileStyles.content}>
                 <ProfileInfo 
-                  email={mockUser.email}
+                  email={userData.email}
                   joinedDaysAgo={128}
                 />
                 
                 <ProfileStats 
-                  reviewsCount={mockUser.reviewsCount}
-                  averageRating={mockUser.averageRating}
+                  reviewsCount={userData.reviewsCount}
+                  averageRating={userData.averageRating}
                 />
                 
                 <ProfileActions
-                  userRole={mockUser.isModerator ? 'moderator' : 'user'}
+                  userRole={userData.isModerator ? 'moderator' : 'user'}
                   hasPendingRequest={hasPendingRequest}
                   onBecomeModerator={handleBecomeModerator}
                   onEditProfile={handleEditProfile}
@@ -81,6 +98,16 @@ export const ProfilePage = () => {
           </Paper>
         </Container>
       </Box>
+   
+      <EditProfileModal
+        open={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSubmit={handleSaveProfile}
+        initialData={{
+          username: userData.username,
+          avatarUrl: userData.avatarUrl
+        }}
+      />
     </>
   );
 };
