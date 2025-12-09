@@ -1,5 +1,5 @@
 import { Modal, Box, Tabs, Tab } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { LoginRequest, RegisterRequest } from '../../types/user';
 import { authModalStyles } from './AuthModal.styles';
 import { LoginForm } from './LoginForm';
@@ -7,13 +7,18 @@ import { RegisterForm } from './RegisterForm';
 
 interface AuthModalProps {
   open: boolean;
+  type?: 'login' | 'register';
   onClose: () => void;
   onLogin: (data: LoginRequest) => void;
   onRegister: (data: RegisterRequest) => void;
 }
 
-export const AuthModal = ({ open, onClose, onLogin, onRegister }: AuthModalProps) => {
-  const [activeTab, setActiveTab] = useState(0);
+export const AuthModal = ({ open, type = 'login', onClose, onLogin, onRegister }: AuthModalProps) => {
+  const [activeTab, setActiveTab] = useState(type === 'login' ? 0 : 1);
+
+  useEffect(() => {
+    setActiveTab(type === 'login' ? 0 : 1);
+  }, [type]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

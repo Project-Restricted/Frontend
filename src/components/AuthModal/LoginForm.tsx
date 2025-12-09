@@ -20,7 +20,12 @@ export const LoginForm = ({ onSubmit, onSwitchToRegister }: LoginFormProps) => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={authModalStyles.form}>
+    <Box 
+      component="form" 
+      onSubmit={handleSubmit} 
+      sx={authModalStyles.form}
+      autoComplete="off"
+    >
       <TextField
         label="Никнейм"
         value={formData.username}
@@ -28,6 +33,8 @@ export const LoginForm = ({ onSubmit, onSwitchToRegister }: LoginFormProps) => {
         sx={authModalStyles.textField}
         fullWidth
         required
+        autoComplete="off"
+        inputProps={{ autoComplete: 'off' }}
       />
       
       <TextField
@@ -38,6 +45,8 @@ export const LoginForm = ({ onSubmit, onSwitchToRegister }: LoginFormProps) => {
         sx={authModalStyles.textField}
         fullWidth
         required
+        autoComplete="new-password"
+        inputProps={{ autoComplete: 'new-password' }}
       />
 
       <Button 

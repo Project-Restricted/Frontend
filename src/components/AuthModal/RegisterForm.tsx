@@ -26,7 +26,12 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={authModalStyles.form}>
+    <Box 
+      component="form" 
+      onSubmit={handleSubmit} 
+      sx={authModalStyles.form}
+      autoComplete="off"
+    >
       <Box 
         sx={{ 
           display: 'grid',
@@ -35,7 +40,6 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           mb: 2
         }}
       >
-
         <TextField
           label="Фамилия"
           value={formData.lastName}
@@ -43,6 +47,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           sx={authModalStyles.textField}
           fullWidth
           required
+          autoComplete="off"
+          inputProps={{ autoComplete: 'off' }}
         />
         
         <TextField
@@ -53,6 +59,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           sx={authModalStyles.textField}
           fullWidth
           required
+          autoComplete="off"
+          inputProps={{ autoComplete: 'off' }}
         />
 
         <TextField
@@ -62,6 +70,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           sx={authModalStyles.textField}
           fullWidth
           required
+          autoComplete="off"
+          inputProps={{ autoComplete: 'off' }}
         />
 
         <TextField
@@ -71,6 +81,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           sx={authModalStyles.textField}
           fullWidth
           required
+          autoComplete="off"
+          inputProps={{ autoComplete: 'off' }}
         />
 
         <TextField
@@ -79,6 +91,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
           sx={authModalStyles.textField}
           fullWidth
+          autoComplete="off"
+          inputProps={{ autoComplete: 'off' }}
         />
 
         <TextField
@@ -89,6 +103,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           sx={authModalStyles.textField}
           fullWidth
           required
+          autoComplete="new-password"
+          inputProps={{ autoComplete: 'new-password' }}
         />
         
         <TextField
@@ -100,6 +116,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           InputLabelProps={{ shrink: true }}
           fullWidth
           required
+          autoComplete="off"
+          inputProps={{ autoComplete: 'off' }}
         />   
 
         <TextField
@@ -110,6 +128,8 @@ export const RegisterForm = ({ onSubmit, onSwitchToLogin }: RegisterFormProps) =
           sx={authModalStyles.textField}
           fullWidth
           required
+          autoComplete="new-password"
+          inputProps={{ autoComplete: 'new-password' }}
         />
       </Box>
 

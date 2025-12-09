@@ -12,6 +12,7 @@ import { MovieCard } from '../components/MovieCard/MovieCard';
 import { AuthModal } from '../components/AuthModal/AuthModal';
 import { AddFilmModal } from '../components/AddFilmModal';
 import { moviesApi } from '../api/movies';
+import { authApi } from '../api';
 import { mockFilms } from '../data';
 import type { FilmPreview } from '../types/film';
 import type { FilmSubmission } from '../types/moderation';
@@ -24,8 +25,8 @@ export const CatalogPage = () => {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
    
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalType, setAuthModalType] = useState<'login' | 'register'>('login');
   const [isAddFilmModalOpen, setIsAddFilmModalOpen] = useState(false);
   
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -83,43 +84,78 @@ export const CatalogPage = () => {
     alert('Фильм отправлен на модерацию! (демо)');
   };
 
-  const handleLogin = (data: LoginRequest) => {
-    console.log('Логин данные:', data);
-  
-    setCurrentUser({
-      id: 1,
-      email: 'user@example.com',
-      username: data.username,
-      avatarUrl: '',
-      averageRating: 4.2,
-      reviewsCount: 5,
-      isModerator: false,
-      createdAt: Date.now()
-    });
+  const handleLogin = async (data: LoginRequest) => {
+    console.log('Отправка логина на сервер:', data);
     
-    setIsLoginModalOpen(false);
+    try {
+      const response = await authApi.login(data);
+      
+      if (response.success && response.tokens && response.user) {        
+        localStorage.setItem('access_token', response.tokens.access);
+        localStorage.setItem('refresh_token', response.tokens.refresh);
+                
+        setCurrentUser(response.user);
+        setAuthModalOpen(false);
+        
+        console.log('✅ Успешный логин:', response.user);
+      } else {
+        console.error('❌ Ошибка логина:', response.error);
+        alert(response.error || 'Ошибка входа');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка сети при логине:', error);
+      alert('Ошибка соединения с сервером');
+    }
   };
 
-  const handleRegister = (data: RegisterRequest) => {
-    console.log('Регистрация данные:', data);
-  
-    setCurrentUser({
-      id: 2,
-      email: data.email,
-      username: data.username,
-      avatarUrl: '',
-      averageRating: 0,
-      reviewsCount: 0,
-      isModerator: false,
-      createdAt: Date.now()
-    });
+  const handleRegister = async (data: RegisterRequest) => {
+    console.log('Отправка регистрации на сервер:', data);
     
-    setIsRegisterModalOpen(false);
-  };
+    try {
+      const response = await authApi.register(data);
+      
+      if (response.success && response.user) {        
+        const loginResponse = await authApi.login({
+          username: data.username,
+          password: data.password
+        });
+        
+        if (loginResponse.success && loginResponse.tokens && loginResponse.user) {
+          localStorage.setItem('access_token', loginResponse.tokens.access);
+          localStorage.setItem('refresh_token', loginResponse.tokens.refresh);
+          setCurrentUser(loginResponse.user);
+          setAuthModalOpen(false);
+          
+          console.log('✅ Успешная регистрация и логин:', loginResponse.user);
+        }
+      } else {
+        console.error('❌ Ошибка регистрации:', response.error);
+        alert(response.error || 'Ошибка регистрации');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка сети при регистрации:', error);
+      alert('Ошибка соединения с сервером');
+    }
+  };    
 
-  const handleLogout = () => {
-    console.log('Выход');
-    setCurrentUser(null);
+  const handleLogout = async () => {
+    console.log('Выход из системы');
+    
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      
+      if (refreshToken) {
+        await authApi.logout({ refresh: refreshToken });
+        console.log('✅ Успешный выход с сервера');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка при выходе:', error);      
+    } finally {      
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      setCurrentUser(null);
+      console.log('✅ Токены удалены из localStorage');
+    }
   };
 
   const handleProfileClick = () => {
@@ -130,8 +166,14 @@ export const CatalogPage = () => {
     <>
       <Header 
         currentUser={currentUser}
-        onLoginClick={() => setIsLoginModalOpen(true)}
-        onRegisterClick={() => setIsRegisterModalOpen(true)}
+        onLoginClick={() => {
+          setAuthModalType('login');
+          setAuthModalOpen(true);
+        }}
+        onRegisterClick={() => {
+          setAuthModalType('register');
+          setAuthModalOpen(true);
+        }}
         onLogoutClick={handleLogout}
         onProfileClick={handleProfileClick}
       />
@@ -191,11 +233,9 @@ export const CatalogPage = () => {
       </Container>
       
       <AuthModal
-        open={isLoginModalOpen || isRegisterModalOpen}
-        onClose={() => {
-          setIsLoginModalOpen(false);
-          setIsRegisterModalOpen(false);
-        }}
+        open={authModalOpen}
+        type={authModalType}
+        onClose={() => setAuthModalOpen(false)}
         onLogin={handleLogin}
         onRegister={handleRegister}
       />
