@@ -18,7 +18,8 @@ export const UserSection = ({ user, onLogoutClick, onProfileClick }: UserSection
       <IconButton onClick={onProfileClick} size="large">
         <Avatar 
           sx={headerStyles.avatar}
-          src={user.avatarUrl}
+          src={user.avatarUrl || undefined}
+          alt={user.username}
         >
           {user.username.charAt(0).toUpperCase()}
         </Avatar>

@@ -3,10 +3,13 @@ export interface User {
   email: string;
   username: string;
   avatarUrl: string | null;
-  averageRating: number;
-  reviewsCount: number;
-  isModerator: boolean;
-  createdAt: number;
+  role?: 'user' | 'moderator' | 'admin';
+  created_at?: string;
+  is_active?: boolean;
+  last_login?: string;
+  averageRating?: number;
+  reviewsCount?: number;
+  isModerator?: boolean;
 }
 
 export interface RegisterRequest {
@@ -79,4 +82,8 @@ export interface UserResponse {
 export interface Tokens {
   access: string;
   refresh: string;
+}
+
+export interface MeResponse {
+  user: User;
 }

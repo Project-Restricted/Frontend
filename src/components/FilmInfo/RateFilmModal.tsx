@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Modal,
@@ -17,17 +17,25 @@ interface RateFilmModalProps {
   onClose: () => void;
   onSubmit: (rating: number) => Promise<void>;
   filmTitle?: string;
+  userRating?: number | null;
 }
 
 export const RateFilmModal = ({ 
   open, 
   onClose, 
   onSubmit,
-  filmTitle = ''
+  filmTitle = '',
+  userRating
 }: RateFilmModalProps) => {
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open && userRating) {
+      setSelectedRating(userRating);
+    }
+  }, [open, userRating]);
 
   const handleSubmit = async () => {
     if (selectedRating === 0) return;
@@ -36,7 +44,6 @@ export const RateFilmModal = ({
     
     try {
       await onSubmit(selectedRating);
-      setSelectedRating(0);
       setHoverRating(0);
       onClose();
     } catch (error) {
@@ -72,6 +79,20 @@ export const RateFilmModal = ({
     return 'Отлично';
   };
 
+  const getModalTitle = () => {
+    if (userRating) {
+      return 'Изменить оценку фильма';
+    }
+    return 'Оценить фильм';
+  };
+
+  const getCurrentRatingText = () => {
+    if (userRating && selectedRating === 0) {
+      return `Ваша текущая оценка: ${userRating} из 10`;
+    }
+    return selectedRating > 0 ? `${selectedRating} из 10` : 'Выберите оценку';
+  };
+
   return (
     <Modal
       open={open}
@@ -81,7 +102,7 @@ export const RateFilmModal = ({
       <Box sx={rateFilmModalStyles.modal}>
         <Box sx={rateFilmModalStyles.header}>
           <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
-            Оценить фильм
+            {getModalTitle()}
           </Typography>
           <IconButton 
             onClick={handleClose} 
@@ -102,18 +123,39 @@ export const RateFilmModal = ({
             </Typography>
           )}
 
+          {userRating && selectedRating === 0 && (
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: '#fbbf24', 
+                mb: 2, 
+                textAlign: 'center',
+                fontStyle: 'italic'
+              }}
+            >
+              Вы уже оценили этот фильм
+            </Typography>
+          )}
+
           <Box 
             sx={rateFilmModalStyles.starsContainer}
             onMouseLeave={handleStarLeave}
           >
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => {
-              const isFilled = star <= (hoverRating || selectedRating);
+              const displayRating = hoverRating || selectedRating || (userRating || 0);
+              const isFilled = star <= displayRating;
+              
               return (
                 <IconButton
                   key={star}
                   onClick={() => handleStarClick(star)}
                   onMouseEnter={() => handleStarHover(star)}
-                  sx={rateFilmModalStyles.starButton}
+                  sx={{
+                    ...rateFilmModalStyles.starButton,
+                    ...(userRating && star <= userRating && selectedRating === 0 && {
+                      border: '1px solid rgba(251, 191, 36, 0.3)',
+                    })
+                  }}
                   disabled={isSubmitting}
                   aria-label={`Оценить на ${star} из 10`}
                 >
@@ -129,17 +171,27 @@ export const RateFilmModal = ({
 
           <Typography 
             variant="h5" 
-            sx={{ color: 'white', textAlign: 'center', mt: 2, mb: 1 }}
+            sx={{ 
+              color: 'white', 
+              textAlign: 'center', 
+              mt: 2, 
+              mb: 1,
+              ...(userRating && selectedRating === 0 && { color: '#fbbf24' })
+            }}
           >
-            {selectedRating > 0 ? `${selectedRating} из 10` : 'Выберите оценку'}
+            {getCurrentRatingText()}
           </Typography>
 
-          {selectedRating > 0 && (
+          {(selectedRating > 0 || userRating) && (
             <Typography 
               variant="body2" 
-              sx={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', mb: 3 }}
+              sx={{ 
+                color: 'rgba(255,255,255,0.7)', 
+                textAlign: 'center', 
+                mb: 3 
+              }}
             >
-              {getRatingDescription(selectedRating)}
+              {getRatingDescription(selectedRating || userRating || 0)}
             </Typography>
           )}
 
@@ -159,7 +211,12 @@ export const RateFilmModal = ({
               disabled={isSubmitting || selectedRating === 0}
               startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
             >
-              {isSubmitting ? 'Отправка...' : 'Подтвердить оценку'}
+              {isSubmitting 
+                ? 'Отправка...' 
+                : userRating 
+                  ? 'Обновить оценку' 
+                  : 'Подтвердить оценку'
+              }
             </Button>
           </Box>
         </Box>

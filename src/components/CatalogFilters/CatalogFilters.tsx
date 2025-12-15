@@ -9,6 +9,7 @@ interface CatalogFiltersProps {
   onGenresChange: (genres: string[]) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onSearchSubmit?: () => void;
   onAddMovie?: () => void;
 }
 
@@ -17,6 +18,7 @@ export const CatalogFilters = ({
   onGenresChange,
   searchQuery,
   onSearchChange,
+  onSearchSubmit,
   onAddMovie
 }: CatalogFiltersProps) => {
   return (
@@ -40,6 +42,7 @@ export const CatalogFilters = ({
           <SearchBar
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}
+            onSearchSubmit={onSearchSubmit}
           />
         </Box>
       </Box>

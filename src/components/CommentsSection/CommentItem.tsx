@@ -1,54 +1,21 @@
-import { Box, Avatar, Typography, Button, TextField } from '@mui/material';
-import { Favorite, Reply, Delete, Edit } from '@mui/icons-material';
-import { useState } from 'react';
+import { Box, Avatar, Typography, Button } from '@mui/material';
+import { Favorite } from '@mui/icons-material';
 import type { Review } from '../../types/film';
 import { commentsStyles } from './Comments.styles';
 
 interface CommentItemProps {
   comment: Review;
-  depth: number;
-  currentUserId?: number;
-  isModerator?: boolean;
   onLike: (commentId: number) => void;
-  onReply: (parentId: number, text: string) => void;
-  onDelete: (commentId: number) => void;
-  onEdit: (commentId: number) => void;
-  replyingTo?: number | null;
-  onSetReplyingTo: (commentId: number | null) => void;
-  getReplies: (parentId: number) => Review[];
 }
 
 export const CommentItem = ({ 
-  comment, 
-  depth = 0, 
-  currentUserId,
-  isModerator = false,
-  onLike, 
-  onReply, 
-  onDelete,
-  onEdit,
-  replyingTo,
-  onSetReplyingTo,
-  getReplies
+  comment,
+  onLike,
 }: CommentItemProps) => {
-  const [replyText, setReplyText] = useState('');
-  const isMaxDepth = depth >= 3;
-  const canDelete = isModerator || comment.user.id === currentUserId;
-  const canEdit = comment.user.id === currentUserId;
-
-  const replies = getReplies(comment.id);
-
-  const handleReplySubmit = () => {
-    if (replyText.trim()) {
-      onReply(comment.id, replyText);
-      setReplyText('');
-      onSetReplyingTo(null);
-    }
-  };
-
   const formatTimestamp = (timestamp: number): string => {
+    const timestampMs = timestamp * 1000;
     const now = Date.now();
-    const diff = now - timestamp;
+    const diff = now - timestampMs;
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -77,15 +44,15 @@ export const CommentItem = ({
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Avatar 
           sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}
-          src={comment.user.avatarUrl}
+          src={comment.user.avatarUrl || undefined}
         >
-          {comment.user.username.charAt(0).toUpperCase()}
+          {comment.user.username?.charAt(0).toUpperCase() || '?'}
         </Avatar>
         
         <Box sx={{ flex: 1 }}>
           <Box sx={commentsStyles.commentHeader}>
             <Typography variant="subtitle1" sx={commentsStyles.userName}>
-              {comment.user.username}
+              {comment.user.username || 'Аноним'}
             </Typography>
             <Typography variant="caption" sx={commentsStyles.timestamp}>
               {formatTimestamp(comment.createdAt)}
@@ -102,94 +69,13 @@ export const CommentItem = ({
               size="small"
               onClick={() => onLike(comment.id)}
               sx={commentsStyles.actionButton}
+              color={comment.likedByCurrentUser ? 'error' : 'inherit'}
             >
               {comment.likes}
             </Button>
-            
-            {!isMaxDepth && (
-              <Button
-                startIcon={<Reply />}
-                size="small"
-                onClick={() => onSetReplyingTo(comment.id)}
-                sx={commentsStyles.actionButton}
-              >
-                Ответить
-              </Button>
-            )}
-
-            {canEdit && (
-              <Button
-                startIcon={<Edit />}
-                size="small"
-                onClick={() => onEdit(comment.id)}
-                sx={commentsStyles.actionButton}
-              >
-                Редактировать
-              </Button>
-            )}
-
-            {canDelete && (
-              <Button
-                startIcon={<Delete />}
-                size="small"
-                onClick={() => onDelete(comment.id)}
-                sx={commentsStyles.actionButton}
-              >
-                Удалить
-              </Button>
-            )}
           </Box>
-
-          {replyingTo === comment.id && (
-            <Box sx={commentsStyles.replyForm}>
-              <TextField
-                size="small"
-                fullWidth
-                placeholder="Ваш ответ..."
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                sx={commentsStyles.replyTextField}
-              />
-              <Box sx={commentsStyles.replyActions}>
-                <Button 
-                  onClick={() => onSetReplyingTo(null)}
-                  sx={commentsStyles.actionButton}
-                >
-                  Отмена
-                </Button>
-                <Button                   
-                  onClick={handleReplySubmit}
-                  sx={commentsStyles.actionButton}
-                  disabled={!replyText.trim()}
-                >
-                  Отправить
-                </Button>
-              </Box>
-            </Box>
-          )}
         </Box>
       </Box>
-
-      {replies.length > 0 && (
-        <Box sx={commentsStyles.repliesContainer}>
-          {replies.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              depth={depth + 1}
-              currentUserId={currentUserId}
-              isModerator={isModerator}
-              onLike={onLike}
-              onReply={onReply}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              replyingTo={replyingTo}
-              onSetReplyingTo={onSetReplyingTo}
-              getReplies={getReplies}
-            />
-          ))}
-        </Box>
-      )}
     </Box>
   );
 };

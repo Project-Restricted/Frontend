@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -16,59 +16,135 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import type { FilmSubmission } from '../../types/moderation';
-import { ALL_GENRES } from '../../data';
 import { addFilmModalStyles as styles } from './AddFilmModal.styles';
+import { API_CONFIG, ENDPOINTS } from '../../config/constants';
+
+interface Genre {
+  id: number;
+  name: string;
+}
+
+interface FilmFormData {
+  title: string;
+  description: string;
+  year: number;
+  video_url: string;
+  duration: number;
+  genres: string[];
+  tags: string[];
+  director: string;
+  actors: string[];
+  country: string;
+  poster: File | null;
+}
 
 interface AddFilmModalProps {
   onClose: () => void;
-  onSubmit?: (filmData: Omit<FilmSubmission, 'id'>) => void;
+  onSubmit?: (formData: FormData) => void;
 }
 
 export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
-  const [formData, setFormData] = useState<Omit<FilmSubmission, 'id'>>({
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [formData, setFormData] = useState<FilmFormData>({
     title: '',
-    posterUrl: '',
-    country: '',
+    description: '',
     year: new Date().getFullYear(),
+    video_url: '',
     duration: 90,
     genres: [],
     tags: [],
     director: '',
     actors: [],
-    description: '',
-    videoUrl: '',
+    country: '',
+    poster: null,
   });
 
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [loadingGenres, setLoadingGenres] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
   const [currentActor, setCurrentActor] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        setLoadingGenres(true);
+        const response = await fetch(`${API_CONFIG.BASE_URL}${ENDPOINTS.MOVIE_GENRES}`);
+        
+        if (!response.ok) {
+          throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+        }
+        
+        const data: Genre[] = await response.json();
+        setGenres(data);
+      } catch (err: any) {
+        console.error('Ошибка загрузки жанров:', err);
+        setGenres([]);
+      } finally {
+        setLoadingGenres(false);
+      }
+    };
+
+    loadGenres();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    console.log('=== Данные фильма ===');
-    console.log('Название:', formData.title);
-    console.log('Видео URL:', formData.videoUrl);
-    console.log('Год:', formData.year);
-    console.log('Длительность:', formData.duration);
-    console.log('Жанры:', formData.genres);
-    console.log('Теги:', formData.tags);
-    console.log('Актёры:', formData.actors);
-    console.log('Режиссёр:', formData.director);
-    console.log('Страна:', formData.country);
-    console.log('Постер URL:', formData.posterUrl);
-    console.log('Описание:', formData.description);
-    console.log('===================');
-    
     try {
       if (onSubmit) {
-        await onSubmit(formData);
+        const formDataToSend = new FormData();
+        
+        formDataToSend.append('title', formData.title);
+        
+        if (formData.description) {
+          formDataToSend.append('description', formData.description);
+        }
+        
+        if (formData.year) {
+          formDataToSend.append('year', formData.year.toString());
+        }
+        
+        if (formData.video_url) {
+          formDataToSend.append('video_url', formData.video_url);
+        }
+        
+        if (formData.duration) {
+          formDataToSend.append('duration', formData.duration.toString());
+        }
+        
+        formData.genres.forEach(genreId => {
+          formDataToSend.append('genres', genreId);
+        });
+        
+        formData.tags.forEach(tag => {
+          formDataToSend.append('tags', tag);
+        });
+        
+        if (formData.director) {
+          formDataToSend.append('director', formData.director);
+        }
+        
+        formData.actors.forEach(actor => {
+          formDataToSend.append('actors', actor);
+        });
+        
+        if (formData.country) {
+          formDataToSend.append('country', formData.country);
+        }
+        
+        if (formData.poster) {
+          formDataToSend.append('poster', formData.poster);
+        }
+        
+        await onSubmit(formDataToSend);
       } else {
         await new Promise(resolve => setTimeout(resolve, 1000));
         alert('Фильм отправлен на модерацию! (демо)');
       }
+      
       onClose();
     } catch (error) {
       console.error('Ошибка при отправке:', error);
@@ -78,7 +154,7 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
     }
   };
 
-  const handleInputChange = (field: keyof typeof formData) => (
+  const handleInputChange = (field: keyof FilmFormData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const value = e.target.value;
@@ -94,6 +170,15 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
       ...prev,
       genres: typeof value === 'string' ? value.split(',') : value,
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData(prev => ({
+        ...prev,
+        poster: e.target.files![0],
+      }));
+    }
   };
 
   const handleAddTag = () => {
@@ -159,7 +244,7 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
 
       <Box component="form" onSubmit={handleSubmit}>
         <TextField
-          label="Название фильма"
+          label="Название фильма *"
           value={formData.title}
           onChange={handleInputChange('title')}
           sx={styles.textField}
@@ -171,11 +256,10 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
 
         <TextField
           label="Ссылка на видео"
-          value={formData.videoUrl}
-          onChange={handleInputChange('videoUrl')}
+          value={formData.video_url}
+          onChange={handleInputChange('video_url')}
           sx={styles.textField}
           fullWidth
-          required
           disabled={isSubmitting}
           margin="normal"
           helperText="YouTube, VK, Rutube и другие легальные источники"
@@ -206,16 +290,39 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
           />
         </Box>
 
-        <TextField
-          label="Ссылка на постер"
-          value={formData.posterUrl}
-          onChange={handleInputChange('posterUrl')}
-          sx={styles.textField}
-          fullWidth
-          disabled={isSubmitting}
-          margin="normal"
-          helperText="URL изображения обложки"
-        />
+        <Box sx={styles.fieldContainer}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Постер фильма
+          </Typography>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+          />
+          <Button
+            variant="outlined"
+            onClick={() => fileInputRef.current?.click()}
+            sx={styles.textField}
+            fullWidth
+          >
+            {formData.poster ? formData.poster.name : 'Выберите файл постера'}
+          </Button>
+          {formData.poster && (
+            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="caption">
+                Выбран: {formData.poster.name} ({(formData.poster.size / 1024).toFixed(1)} KB)
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => setFormData(prev => ({ ...prev, poster: null }))}
+              >
+                Удалить
+              </Button>
+            </Box>
+          )}
+        </Box>
 
         <TextField
           label="Режиссёр"
@@ -226,7 +333,7 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
           disabled={isSubmitting}
           margin="normal"
         />
-       
+
         <Box sx={styles.fieldContainer}>
           <Box sx={styles.chipInputContainer}>
             <TextField
@@ -267,23 +374,26 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
         </Box>
 
         <FormControl fullWidth sx={styles.selectField}>
-          <InputLabel sx={styles.selectLabel}>Жанры</InputLabel>
+          <InputLabel sx={styles.selectLabel}>
+            {loadingGenres ? 'Загрузка жанров...' : 'Жанры'}
+          </InputLabel>
           <Select
             multiple
             value={formData.genres}
             onChange={handleGenresChange}
-            input={<OutlinedInput label="Жанры" />}
-            disabled={isSubmitting}
+            input={<OutlinedInput label={loadingGenres ? 'Загрузка жанров...' : 'Жанры'} />}
+            disabled={isSubmitting || loadingGenres}
             renderValue={(selected) => (
               <Box sx={styles.selectedValues}>
                 {selected.length === 0 ? (
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                    Выберите жанры...
+                    {loadingGenres ? 'Загрузка...' : 'Выберите жанры...'}
                   </Typography>
                 ) : (
-                  selected.map((value) => (
-                    <Chip key={value} label={value} sx={styles.chip} size="small" />
-                  ))
+                  selected.map((genreId) => {
+                    const genre = genres.find(g => g.id.toString() === genreId);
+                    return <Chip key={genreId} label={genre?.name || genreId} sx={styles.chip} size="small" />;
+                  })
                 )}
               </Box>
             )}
@@ -293,14 +403,14 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
               },
             }}
           >
-            {ALL_GENRES.map((genre) => (
-              <MenuItem key={genre} value={genre}>
-                {genre}
+            {genres.map((genre) => (
+              <MenuItem key={genre.id} value={genre.id.toString()}>
+                {genre.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        
+
         <Box sx={styles.fieldContainer}>
           <Box sx={styles.chipInputContainer}>
             <TextField
@@ -375,7 +485,7 @@ export const AddFilmModal = ({ onClose, onSubmit }: AddFilmModalProps) => {
             type="submit"
             variant="contained"
             sx={styles.submitButton}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !formData.title.trim()}
             startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
           >
             {isSubmitting ? 'Отправка...' : 'Отправить на модерацию'}

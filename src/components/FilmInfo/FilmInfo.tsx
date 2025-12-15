@@ -11,9 +11,15 @@ interface FilmInfoProps {
   film: FilmDetails;
   onAddTagClick?: () => void;
   onRateClick?: () => void;
+  userRating?: number | null;
 }
 
-export const FilmInfo = ({ film, onAddTagClick, onRateClick }: FilmInfoProps) => {
+export const FilmInfo = ({ 
+  film, 
+  onAddTagClick, 
+  onRateClick,
+  userRating
+}: FilmInfoProps) => {
   return (
     <Paper sx={filmInfoStyles.paper}>
       <Box sx={filmInfoStyles.container}>
@@ -50,6 +56,7 @@ export const FilmInfo = ({ film, onAddTagClick, onRateClick }: FilmInfoProps) =>
             <FilmRating 
               rating={film.rating}
               onRateClick={onRateClick || (() => console.log('Оценить фильм'))}
+              userRating={userRating}
             />
           </Box>
           

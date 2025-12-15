@@ -5,6 +5,7 @@ import { profileStyles } from './Profile.styles';
 interface ProfileInfoProps {
   email: string;
   joinedDaysAgo: number;
+  isModerator?: boolean;
 }
 
 export const ProfileInfo = ({ email, joinedDaysAgo }: ProfileInfoProps) => {

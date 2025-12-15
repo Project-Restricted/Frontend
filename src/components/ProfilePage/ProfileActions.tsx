@@ -3,30 +3,59 @@ import { Shield, Edit } from '@mui/icons-material';
 import { profileStyles } from './Profile.styles';
 
 interface ProfileActionsProps {
-  userRole: string;
   hasPendingRequest: boolean;
   onBecomeModerator: () => void;
   onEditProfile: () => void;
+  isModerator?: boolean;
 }
 
 export const ProfileActions = ({ 
-  userRole, 
   hasPendingRequest, 
   onBecomeModerator, 
-  onEditProfile 
+  onEditProfile,
+  isModerator = false
 }: ProfileActionsProps) => {
+  
+  const getButtonText = () => {
+    if (isModerator) return 'Заявка одобрена';
+    if (hasPendingRequest) return 'Заявка на рассмотрении';
+    return 'Стать модератором';
+  };
+
+  const getIsDisabled = () => {
+    return isModerator || hasPendingRequest;
+  };
+
   return (
     <Box sx={profileStyles.actionsContainer}>
-      {userRole === 'user' && !hasPendingRequest && (
-        <Button
-          startIcon={<Shield />}
-          variant="outlined"
-          onClick={onBecomeModerator}
-          sx={profileStyles.moderatorButton}
-        >
-          Стать модератором
-        </Button>
-      )}
+      <Button
+        startIcon={<Shield />}
+        variant={isModerator ? 'contained' : 'outlined'}
+        onClick={isModerator || hasPendingRequest ? undefined : onBecomeModerator}
+        disabled={getIsDisabled()}
+        sx={{
+          ...profileStyles.moderatorButton,
+          ...(isModerator ? { 
+            bgcolor: 'black',            
+            color: 'white',
+            '&.Mui-disabled': {
+              bgcolor: 'black',              
+              color: 'white',
+              opacity: 0.9
+            }
+          } : {}),
+          ...(hasPendingRequest ? {             
+            color: 'warning.main',
+            '&.Mui-disabled': {
+              borderColor: 'warning.main',
+              color: 'warning.main',
+              opacity: 0.7
+            }
+          } : {})
+        }}
+      >
+        {getButtonText()}
+      </Button>
       
       <Button
         startIcon={<Edit />}

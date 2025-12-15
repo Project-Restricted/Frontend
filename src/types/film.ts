@@ -29,16 +29,16 @@ export interface FilmsQueryParams {
 
 export interface ReviewUser {
   id: number;
-  avatarUrl: string;
   username: string;
+  avatarUrl?: string;
 }
 
 export interface Review {
   id: number;
-  replyOn: number;
   text: string;
-  likes: number;
   createdAt: number;
+  likes: number;
+  likedByCurrentUser: boolean;
   user: ReviewUser;
 }
 
@@ -56,18 +56,28 @@ export interface FilmDetails {
   description: string;
   rating: number;
   videoUrl: string;
-  reviews: Review[];
+  reviews?: Review[];
 }
 
-export interface RatingRequest {
-  filmId: number;
-  value: number;
+export interface RateFilmRequest {
+  score: number;
+}
+
+export interface RateFilmResponse {
+  movie: number;
+  rating: number;
+}
+
+export interface UserRatingResponse {
+  score: number;
+  movie: number;
+  userId: number;
+  ratedAt?: string;
 }
 
 export interface CommentRequest {
-  filmId: number;
-  replyOn: number;
-  text: string;  
+  movie: number;
+  text: string;
 }
 
 export interface EditCommentRequest {
